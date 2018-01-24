@@ -95,10 +95,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var AppComponent = (function () {
     function AppComponent(http) {
         this.http = http;
-        this.token = '456198924:AAGtULqrSKM6mbWY_Z2TK7PGPfwP2W6CZtA';
+        this.token = '456198924:AAEICuQy1e0gopHbeNyv0HGua95gVpN1X9k';
+        this.timer = this;
         this.onLoading();
     }
-    /* Получаем доступ к БОТУ и записываем данные в объект для дальнейшей работы */
+    /* Получаем Токен, данные пользователя - записываем данные в объект для дальнейшей работы с БОТОМ */
     AppComponent.prototype.onLoading = function () {
         var _this = this;
         var methodName = 'getMe'; // Название Метода
@@ -107,39 +108,58 @@ var AppComponent = (function () {
             var parsingResponseJson = data.json(), result = parsingResponseJson.result; // Сократим до результата
             /* Записываем данные об пользователе */
             var saveUserData = {
-                id: Number(result.id),
+                messageChatId: Number(result.id),
                 is_bot: result.is_bot,
                 first_name: result.first_name,
                 username: result.username,
             };
-            _this.getInformationChat(); // Зарпашиваем доступ к приложению
-            _this.pasteMessage(saveUserData); // Если всё хорошо запускаем дальше
+            _this.getInformationChat(saveUserData); // Запрашиваем доступ к приложению
         }, function (error) {
             console.log('%c ' + 'error', 'background:red;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error);
         });
     };
     /* Получаем ID чата для работы с сообщениями !important */
-    AppComponent.prototype.getInformationChat = function () {
+    AppComponent.prototype.getInformationChat = function (userData) {
         var _this = this;
         var methodName = 'getUpdates'; // Название метода
-        this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '')
+        this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '?offset=112080303') // offset - параметр для игнорирования тех пользователей которым мы уже отправили сообщения
             .subscribe(function (data) {
             var responce = data.json();
-            _this.pasteMessage(responce);
-        }, function (error) { return console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error); });
+            console.log(responce);
+            _this.pasteMessage(responce, userData);
+        }, function (error) {
+            console.log('%c ' + 'error.statusText', 'background:blue;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error.statusText);
+            switch (error.response) {
+                case error.response.statusText = 'Forbidden':
+                    console.log('%c ' + 'Вас удалили из группы или Выставили Бан', 'background:coral1;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;');
+                    break;
+                default:
+                    console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error);
+                    break;
+            }
+        });
     };
-    /* Отправляем сообщения */
-    AppComponent.prototype.pasteMessage = function (saveDataUser) {
+    /* Отправляем сообщение в ЛС по ID или по ID группы */
+    AppComponent.prototype.pasteMessage = function (chatOpen, userData) {
+        var _this = this;
         /* Получили доступ к чату, пробуем отправлять сообщения */
-        if (saveDataUser.ok === true) {
+        if (chatOpen.ok === true) {
             var methodName = 'sendMessage', // Название Типа
-            postMessage_1 = 'Мой бот готов отправлять сообщения!'; // Сообщение которое полетит в группу(через бота)
-            this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '?chat_id=' + Number(saveDataUser.result[0].message.from.id) + '&text=' + postMessage_1) // chat_id = Строка или Число, будет в json когда вступит в групповой чат
+            postMessage_1 = 'Сегодня: ' + new Date(); // Сообщение которое полетит в группу(через бота)
+            this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=' + postMessage_1) // chat_id = Строка или Число, будет в json когда вступит в групповой чат
                 .subscribe(function (data) {
                 var responce = data.json();
-                console.log(responce);
+                userData.appId = responce.result.chat.id; // ID чата в котором отсылаем сообщения
+                console.log('%c ' + 'responce', 'background:orange;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', responce);
+                _this.timer.onLoading(); // Запускаем повыторный цикл
             }, function (error) { return console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error); });
         }
+        else {
+            alert('Нет прав у бота отправлять сообщения, смотри метод "getUpdates"');
+        }
+    };
+    /* Paste data for interface */
+    AppComponent.prototype.postDataForInterface = function () {
     };
     AppComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
