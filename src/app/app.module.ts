@@ -5,7 +5,6 @@ import {HttpModule} from '@angular/http'; // Для запроса GET, POST ...
 
 import {AppComponent} from './app.component';
 
-
 @NgModule({
   declarations: [
     AppComponent

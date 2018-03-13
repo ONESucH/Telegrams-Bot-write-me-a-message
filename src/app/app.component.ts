@@ -8,7 +8,7 @@ import {Http} from '@angular/http';
 })
 export class AppComponent {
 
-  private token: string = '456198924:AAEICuQy1e0gopHbeNyv0HGua95gVpN1X9k';
+  private token: string = '456198924:AAFoDQBPFeWnU45kOUQ4jvyBmOMy8e_H6kQ';
   private timer = this;
 
   constructor(private http: Http) {
@@ -41,7 +41,7 @@ export class AppComponent {
         })
   }
 
-  /* Получаем ID чата для работы с сообщениями !important */
+  /* Получаем ID чата для работы с сообщениями */
   getInformationChat(userData) { // Получили информацио об приложении
 
     let methodName: string = 'getUpdates'; // Название метода
@@ -90,7 +90,7 @@ export class AppComponent {
 
             console.log('%c ' + 'responce', 'background:orange;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', responce);
 
-            this.timer.onLoading(); // Запускаем повыторный цикл
+            this.timer.onLoading(); // Запускаем поторный цикл
           },
           error => console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error)
         );
