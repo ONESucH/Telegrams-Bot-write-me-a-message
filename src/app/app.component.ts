@@ -10,6 +10,7 @@ import {Token} from './token';
 export class AppComponent {
 
   public token: any;
+  public moreCommands = '';
 
   constructor(private http: Http, public dataToken: Token) {
     this.token = this.dataToken.key;
@@ -21,9 +22,8 @@ export class AppComponent {
 
   /* Получаем Токен, данные пользователя - записываем данные в объект для дальнейшей работы с БОТОМ */
   onLoading() {
-    let methodName: string = 'getMe'; // Название Метода
 
-    this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName)
+    this.http.get('https://api.telegram.org/bot' + this.token + '/getMe')
       .subscribe(
         data => {
 
@@ -42,27 +42,37 @@ export class AppComponent {
         },
         error => {
           console.log('%c ' + 'error', 'background:red;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error)
-        })
+        }
+      )
   }
 
-  /* Получаем ID чата для работы с сообщениями */
-  getInformationChat(userData) { // Получили информацио об приложении
+  /* Получаем ID чата для работы с сообщениями / командами */
+  getInformationChat(userData) { // Получили информацию об приложении
+    let timer = this;
 
-    let methodName: string = 'getUpdates'; // Название метода
-
-    this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '?offset=112080303') // offset - параметр для игнорирования тех пользователей которым мы уже отправили сообщения
+    this.http.get('https://api.telegram.org/bot' + this.token + '/getUpdates?offset=112080303') // offset - параметр для игнорирования тех пользователей которым мы уже отправили сообщения
       .subscribe(
         data => {
+          let responce = data.json(),
+            commands = responce.result[responce.result.length-1].message.text; // сообщение запишем чтобы отлавливать команды
 
-          const responce = data.json();
+          /**
+           -----------------------------------------
+           *  Здесь мы задаём команды
+           -----------------------------------------
+           **/
+          // Накрутка счетчика
+          if (commands === '/telegrammcounter') {
+            this.pasteMessage(responce, userData);
+          } else
+          // Выводим дату
+          if (commands === '/clock' && commands !== this.moreCommands) {
+            this.getToData(responce, userData);
+          }
 
-          console.log(responce);
-
-          this.pasteMessage(responce, userData);
+          this.moreCommands = commands;
         },
         error => {
-          console.log('%c ' + 'error.statusText', 'background:blue;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error.statusText);
-
           switch (error.response) {
             case error.response.statusText = 'Forbidden':
               console.log('%c ' + 'Вас удалили из группы или Выставили Бан', 'background:coral1;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;');
@@ -73,21 +83,26 @@ export class AppComponent {
           }
         },
       );
+
+    // Цикл обновления данных
+    setTimeout(function () {
+      timer.onLoading();
+    }, 500);
   }
 
-  /* Отправляем сообщение в ЛС по ID или по ID группы */
+  /* Накрутка сообщений */
   pasteMessage(chatOpen, userData) { // Отправляем по функциям user data для того чтобы не потерять данные + не делать глобальные переменные
 
     /* Получили доступ к чату, пробуем отправлять сообщения */
     if (chatOpen.ok === true) {
 
-      this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Сегодня: ' + new Date()) // chat_id = Строка или Число, будет в json когда вступит в групповой чат
+      this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Добавляем...') // chat_id = Строка или Число, будет в json когда вступит в групповой чат
         .subscribe(
           data => {
             let responce = data.json();
             userData.appId = responce.result.chat.id; // ID чата в котором отсылаем сообщения
 
-            this.onLoading(); // Запускаем повторный цикл
+            //this.pasteMessage(chatOpen, userData); // Запускаем повторный цикл
           },
           error => console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error)
         );
@@ -96,4 +111,16 @@ export class AppComponent {
     }
   }
 
+  /* Получаем время */
+  getToData(chatOpen, userData) {
+    let getData = new Date();
+
+    this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Время: ' + getData.getHours()+':'+getData.getMinutes()+':'+getData.getSeconds())
+      .subscribe(
+        data => {
+          let responce = data.json();
+          userData.appId = responce.result.chat.id;
+        }
+      );
+  }
 }
