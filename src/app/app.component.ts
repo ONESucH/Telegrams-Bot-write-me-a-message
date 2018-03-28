@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {Http} from '@angular/http';
+import {Token} from './token';
 
 @Component({
   selector: 'app-root',
@@ -8,10 +9,13 @@ import {Http} from '@angular/http';
 })
 export class AppComponent {
 
-  private token: string = '456198924:AAEICuQy1e0gopHbeNyv0HGua95gVpN1X9k';
-  private timer = this;
+  public token: any;
 
-  constructor(private http: Http) {
+  constructor(private http: Http, public dataToken: Token) {
+    this.token = this.dataToken.key;
+  }
+
+  ngOnInit() {
     this.onLoading();
   }
 
@@ -77,20 +81,12 @@ export class AppComponent {
     /* Получили доступ к чату, пробуем отправлять сообщения */
     if (chatOpen.ok === true) {
 
-      let methodName: string = 'sendMessage', // Название Типа
-        postMessage: string = 'Сегодня: ' + new Date(); // Сообщение которое полетит в группу(через бота)
-
-      this.http.get('https://api.telegram.org/bot' + this.token + '/' + methodName + '?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=' + postMessage) // chat_id = Строка или Число, будет в json когда вступит в групповой чат
+      this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Сегодня: ' + new Date()) // chat_id = Строка или Число, будет в json когда вступит в групповой чат
         .subscribe(
           data => {
-
             let responce = data.json();
-
             userData.appId = responce.result.chat.id; // ID чата в котором отсылаем сообщения
-
-            console.log('%c ' + 'responce', 'background:orange;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', responce);
-
-            this.timer.onLoading(); // Запускаем повыторный цикл
+            this.onLoading(); // Запускаем повторный цикл
           },
           error => console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error)
         );
@@ -99,8 +95,4 @@ export class AppComponent {
     }
   }
 
-  /* Paste data for interface */
-  postDataForInterface() {
-
-  }
 }

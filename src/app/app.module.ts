@@ -5,6 +5,9 @@ import {HttpModule} from '@angular/http'; // Для запроса GET, POST ...
 
 import {AppComponent} from './app.component';
 
+/* pipe */
+import {Token} from './token'; // импортируем переменные из файла
+
 
 @NgModule({
   declarations: [
@@ -15,8 +18,7 @@ import {AppComponent} from './app.component';
     AppRoutingModule, // Роутинг
     HttpModule // Для запроса GET, POST ...
   ],
-  providers: [],
+  providers: [Token],
   bootstrap: [AppComponent]
 })
-export class AppModule {
-}
+export class AppModule {}
