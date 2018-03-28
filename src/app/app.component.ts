@@ -9,12 +9,7 @@ import {Token} from './token';
 })
 export class AppComponent {
 
-<<<<<<< HEAD
   public token: any;
-=======
-  private token: string = '456198924:AAFoDQBPFeWnU45kOUQ4jvyBmOMy8e_H6kQ';
-  private timer = this;
->>>>>>> 295f3e00b47b4200322b6ce91c210f00cd7161e1
 
   constructor(private http: Http, public dataToken: Token) {
     this.token = this.dataToken.key;
@@ -91,14 +86,8 @@ export class AppComponent {
           data => {
             let responce = data.json();
             userData.appId = responce.result.chat.id; // ID чата в котором отсылаем сообщения
-<<<<<<< HEAD
+
             this.onLoading(); // Запускаем повторный цикл
-=======
-
-            console.log('%c ' + 'responce', 'background:orange;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', responce);
-
-            this.timer.onLoading(); // Запускаем поторный цикл
->>>>>>> 295f3e00b47b4200322b6ce91c210f00cd7161e1
           },
           error => console.log('%c ' + 'error', 'background:silver;border-radius:10px;color:#fff;text-shadow: 0 0 5px red;padding-right:5px;', error)
         );
