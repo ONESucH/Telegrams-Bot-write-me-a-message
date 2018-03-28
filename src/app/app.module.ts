@@ -5,10 +5,13 @@ import {HttpModule} from '@angular/http'; // Для запроса GET, POST ...
 
 import {AppComponent} from './app.component';
 
+<<<<<<< HEAD
 /* pipe */
 import {Token} from './token'; // импортируем переменные из файла
 
 
+=======
+>>>>>>> 295f3e00b47b4200322b6ce91c210f00cd7161e1
 @NgModule({
   declarations: [
     AppComponent

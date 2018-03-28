@@ -15,6 +15,9 @@
 *.launch
 .settings/
 *.sublime-workspace
+dist/
+token.ts
+token.js
 
 # IDE - VSCode
 .vscode/*
