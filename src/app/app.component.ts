@@ -69,7 +69,9 @@ export class AppComponent {
           if (commands === '/clock' && commands !== this.moreCommands) {
             this.getToData(responce, userData);
           }
-
+          if (commands === '/citation' && commands !== this.moreCommands) {
+            this.citations(responce, userData);
+          }
           this.moreCommands = commands;
         },
         error => {
@@ -111,7 +113,7 @@ export class AppComponent {
     }
   }
 
-  /* Получаем время */
+  /* Запросить время */
   getToData(chatOpen, userData) {
     let getData = new Date();
 
@@ -122,5 +124,24 @@ export class AppComponent {
           userData.appId = responce.result.chat.id;
         }
       );
+  }
+
+  /* Цитаты из рунета */
+  citations(chatOpen, userData) {
+    let obj = this;
+
+    this.http.get('https://api.forismatic.com/api/1.0/?method=getQuote&format=json&json=parseQuote')
+      .subscribe(data => {
+        let responce = data.json();
+
+        obj.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Цитата: ' + responce.quoteText + ' ------ Автор: '+ responce.quoteAuthor)
+          .subscribe(
+            data => {
+              let responce = data.json();
+              userData.appId = responce.result.chat.id;
+            }
+          );
+
+      });
   }
 }
