@@ -72,6 +72,9 @@ export class AppComponent {
           if (commands === '/citation' && commands !== this.moreCommands) {
             this.citations(responce, userData);
           }
+          if (commands === '/newpaper' && commands !== this.moreCommands) {
+            this.newpaper(responce, userData);
+          }
           this.moreCommands = commands;
         },
         error => {
@@ -134,7 +137,26 @@ export class AppComponent {
       .subscribe(data => {
         let responce = data.json();
 
-        obj.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Цитата: ' + responce.quoteText + ' ------ Автор: '+ responce.quoteAuthor)
+        obj.http.get('https://api.telegram.org/bot'+this.token+'/sendMessage?chat_id='+Number(chatOpen.result[0].message.chat.id)+'&text=Цитата: '+responce.quoteText+'%0A  Автор: '+responce.quoteAuthor)
+          .subscribe(
+            data => {
+              let responce = data.json();
+              userData.appId = responce.result.chat.id;
+            }
+          );
+
+      });
+  }
+
+  /* Новости */
+  newpaper(chatOpen, userData) {
+    let news = this;
+
+    this.http.get('https://newsapi.org/v2/top-headlines?sources=google-news-ru&apiKey=15432ffaf9054b8e8105ed6f7d9dc70e')
+      .subscribe(data => {
+        let responce = data.json();
+
+        news.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Описание: %0A'+ responce.articles[0].title)
           .subscribe(
             data => {
               let responce = data.json();
