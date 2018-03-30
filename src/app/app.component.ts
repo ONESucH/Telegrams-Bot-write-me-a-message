@@ -50,7 +50,7 @@ export class AppComponent {
   getInformationChat(userData) { // Получили информацию об приложении
     let timer = this;
 
-    this.http.get('https://api.telegram.org/bot' + this.token + '/getUpdates?offset=112080303') // offset - параметр для игнорирования тех пользователей которым мы уже отправили сообщения
+    this.http.get('https://api.telegram.org/bot' + this.token + '/getUpdates?offset=748537703') // offset - параметр для игнорирования тех пользователей которым мы уже отправили сообщения
       .subscribe(
         data => {
           let responce = data.json(),
@@ -61,11 +61,9 @@ export class AppComponent {
            *  Здесь мы задаём команды
            -----------------------------------------
            **/
-          // Накрутка счетчика
           if (commands === '/telegrammcounter') {
             this.pasteMessage(responce, userData);
-          } else
-          // Выводим дату
+          }
           if (commands === '/clock' && commands !== this.moreCommands) {
             this.getToData(responce, userData);
           }
@@ -75,6 +73,17 @@ export class AppComponent {
           if (commands === '/newpaper' && commands !== this.moreCommands) {
             this.newpaper(responce, userData);
           }
+          if (commands === '/course' && commands !== this.moreCommands) {
+            this.course(responce, userData);
+          }
+          if (commands === '/location' && commands !== this.moreCommands) {
+            this.location(responce, userData);
+          }
+          /**
+           -----------------------------------------
+           *  --------------------------------------
+           -----------------------------------------
+           **/
           this.moreCommands = commands;
         },
         error => {
@@ -118,9 +127,18 @@ export class AppComponent {
 
   /* Запросить время */
   getToData(chatOpen, userData) {
-    let getData = new Date();
+    let day = {
+        1: 'Понедельник',
+        2: 'Вторник',
+        3: 'Среда',
+        4: 'Четверг',
+        5: 'Пятница',
+        6: 'Суббота',
+        7: 'Воскресенье'
+      },
+      getData = new Date();
 
-    this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Время: ' + getData.getHours()+':'+getData.getMinutes()+':'+getData.getSeconds())
+    this.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Время: ' + getData.getHours() + ':' + getData.getMinutes() + ':' + getData.getSeconds() + '%0AДень недели: ' + day[getData.getDay()])
       .subscribe(
         data => {
           let responce = data.json();
@@ -137,7 +155,7 @@ export class AppComponent {
       .subscribe(data => {
         let responce = data.json();
 
-        obj.http.get('https://api.telegram.org/bot'+this.token+'/sendMessage?chat_id='+Number(chatOpen.result[0].message.chat.id)+'&text=Цитата: '+responce.quoteText+'%0A  Автор: '+responce.quoteAuthor)
+        obj.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Цитата: ' + responce.quoteText + ' %0A  Автор: ' + responce.quoteAuthor)
           .subscribe(
             data => {
               let responce = data.json();
@@ -156,7 +174,52 @@ export class AppComponent {
       .subscribe(data => {
         let responce = data.json();
 
-        news.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Описание: %0A'+ responce.articles[0].title)
+        news.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Описание: %0A' + responce.articles[0].title)
+          .subscribe(
+            data => {
+              let responce = data.json();
+              userData.appId = responce.result.chat.id;
+            }
+          );
+
+      });
+  }
+
+  /* Курс валют */
+  course(chatOpen, userData) {
+    let obj = this;
+
+    this.http.get('https://currate.ru/api/?get=rates&pairs=BCHECH,BCHEUR,BCHGBP,BCHJPY,BCHRUB,BCHUSD,BCHXRP,BTCBCH,BTCECH,BTCEUR,BTCGBP,BTCJPY,BTCRUB,BTCUSD,BTCXRP,ECHEUR,ECHGBP,ECHJPY,ECHRUB,ECHUSD,ECHXRP,EURAED,EURBYN,EURGBP,EURJPY,EURKZT,EURRUB,EURUSD,GBPAUD,GBPJPY,GBPRUB,JPYRUB,RUBAED,RUBKZT,USDAED,USDBYN,USDGBP,USDJPY,USDKGS,USDKZT,USDRUB,USDTHB,USDUAH,XRPEUR,XRPGBP,XRPJPY,XRPRUB,XRPUSD&key=68e4f4088639ca47ab26d6db74590e68')
+      .subscribe(data => {
+        let responce = data.json();
+
+        obj.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) + '&text=Курс валюты: %0A  ' + JSON.stringify(responce.data))
+          .subscribe(
+            data => {
+              let responce = data.json();
+              userData.appId = responce.result.chat.id;
+            }
+          );
+
+      });
+  }
+
+  /* Геолокация */
+  location(chatOpen, userData) {
+    let pointer = this;
+
+    this.http.get('http://ip-api.com/json')
+      .subscribe(data => {
+        let responce = data.json();
+
+        pointer.http.get('https://api.telegram.org/bot' + this.token + '/sendMessage?chat_id=' + Number(chatOpen.result[0].message.chat.id) +
+          '&text=Местоположение: %0A' +
+          'Город: ' + responce.city + '%0A' +
+          'Страна: ' + responce.country + '%0A' +
+          'Регион: ' + responce.timezone + '%0A' +
+          'ip: ' + responce.query + '%0A' +
+          'Высота: ' + responce.lat + '%0A' +
+          'Широта: ' + responce.lon)
           .subscribe(
             data => {
               let responce = data.json();
